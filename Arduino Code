@@ -1,0 +1,460 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~VARIABLES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+int buzzer = 9;
+
+int red1 = A0;
+int green1 = A1;
+int blue1 = A2;
+
+int red2 = A3;
+int green2 = A4;
+int blue2 = A5;
+
+int but1 = 13;
+int but2 = 12;
+int but3 = 11;
+int but4 = 10;
+int bState1;
+int bState2;
+int bState3;
+int bState4;
+int pState1 = 0;
+int pState2 = 0;
+int pState3 = 0;
+int pState4 = 0;
+
+int top = 2;
+int bot = 8;
+int mid = 5;
+int tLeft = 3;
+int tRight = 4;
+int bLeft = 6;
+int bRight = 7;
+
+int manChoice = 0;
+int botChoice = 0;
+
+int botRounds = 0;
+int manRounds = 0;
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void setup() {
+  Serial.begin(9600);
+  
+  for(int i = 2; i < 10; i++){
+    pinMode(i, OUTPUT);
+  }
+  
+  for(int i = 10; i < 14; i++){
+    pinMode(i, INPUT);
+  }
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~RUN~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void loop() {
+  
+  bState1 = digitalRead(but1);
+  bState2 = digitalRead(but2);
+  bState3 = digitalRead(but3);
+  bState4 = digitalRead(but4);
+
+  //human chooses rock
+  if(bState1 == LOW && pState1 == 0){
+    pState1 = 1;
+    Serial.println("B1 Pressed");
+
+    manChoice = 1;
+
+    analogWrite(red1, 200);
+    analogWrite(blue1, 0);
+    analogWrite(green1, 0);
+
+    pState2 = 1;
+    pState3 = 1;
+    pState4 = 0;
+  }
+
+  //human chooses paper
+  if(bState2 == LOW && pState2 == 0){
+    pState2 = 1;
+    Serial.println("B2 Pressed");
+
+    manChoice = 2;
+
+    analogWrite(red1, 0);
+    analogWrite(blue1, 200);
+    analogWrite(green1, 0);
+
+    pState1 = 1;
+    pState3 = 1;
+    pState4 = 0;
+  }
+
+  //human chooses scissors
+  if(bState3 == LOW && pState3 == 0){
+    pState3 = 1;
+    Serial.println("B3 Pressed");
+
+    manChoice = 3;
+
+    analogWrite(red1, 0);
+    analogWrite(blue1, 0);
+    analogWrite(green1, 200);
+
+    pState1 = 1;
+    pState2 = 1;
+    pState4 = 0;
+  }
+
+  //compares bot choice vs human choice, unlocks item choosing again
+  if(bState4 == LOW && pState4 == 0){
+    Serial.println("B4 Pressed");
+    pState4 = 1;
+
+    botChooses();
+    check();
+    
+  }
+
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~FUNCTIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void check(){
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~TIE~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if(manChoice == botChoice && manChoice != 0){
+    
+    Serial.println("TIE!");
+    
+    for(int i = 0; i < 3; i++){
+      digitalWrite(mid, HIGH);
+      delay(200);
+      digitalWrite(mid, LOW);
+      delay(200);
+    }
+
+    roundClear();
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~BOT ROCK, MAN PAPER, MAN WIN~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if(botChoice == 1 && manChoice == 2){
+    manRounds+=1;
+    Serial.println("MAN WINS:");
+    Serial.println(manRounds);
+    
+    winSound();
+    
+    analogWrite(red2, 0);
+    analogWrite(blue2, 0);
+    analogWrite(green2, 0);
+    
+    for(int i = 0; i < 5; i++){
+      analogWrite(red1, 200);
+      analogWrite(blue1, 0);
+      analogWrite(green1, 0);
+      delay(200);
+      analogWrite(red1, 0);
+      analogWrite(blue1, 200);
+      analogWrite(green1, 0);
+      delay(200);
+      analogWrite(red1, 0);
+      analogWrite(blue1, 0);
+      analogWrite(green1, 200);
+      delay(200);
+    }
+    
+    roundClear();
+    scoreCount();
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~BOT ROCK, MAN SCISSORS, BOT WIN~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if(botChoice == 1 && manChoice == 3){
+    botRounds+=1;
+    Serial.println("BOT WINS:");
+    Serial.println(botRounds);
+    
+    loseSound();
+    
+    analogWrite(red1, 0);
+    analogWrite(blue1, 0);
+    analogWrite(green1, 0);
+    
+    for(int i = 0; i < 5; i++){
+      analogWrite(red2, 200);
+      analogWrite(blue2, 0);
+      analogWrite(green2, 0);
+      delay(200);
+      analogWrite(red2, 0);
+      analogWrite(blue2, 200);
+      analogWrite(green2, 0);
+      delay(200);
+      analogWrite(red2, 0);
+      analogWrite(blue2, 0);
+      analogWrite(green2, 200);
+      delay(200);
+    }
+    
+    roundClear();
+    scoreCount();
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~BOT PAPER, MAN ROCK, BOT WIN~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if(botChoice == 2 && manChoice == 1){
+    botRounds+=1;
+    Serial.println("BOT WINS:");
+    Serial.println(botRounds);
+    
+    loseSound();
+    
+    analogWrite(red1, 0);
+    analogWrite(blue1, 0);
+    analogWrite(green1, 0);
+    
+    for(int i = 0; i < 5; i++){
+      analogWrite(red2, 200);
+      analogWrite(blue2, 0);
+      analogWrite(green2, 0);
+      delay(200);
+      analogWrite(red2, 0);
+      analogWrite(blue2, 200);
+      analogWrite(green2, 0);
+      delay(200);
+      analogWrite(red2, 0);
+      analogWrite(blue2, 0);
+      analogWrite(green2, 200);
+      delay(200);
+    }
+    
+    roundClear();
+    scoreCount();
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~BOT PAPER, MAN SCISSORS, MAN WIN~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if(botChoice == 2 && manChoice == 3){
+    manRounds+=1;
+    Serial.println("MAN WINS:");
+    Serial.println(manRounds);
+    
+    winSound();
+    
+    analogWrite(red2, 0);
+    analogWrite(blue2, 0);
+    analogWrite(green2, 0);
+    
+    for(int i = 0; i < 5; i++){
+      analogWrite(red1, 200);
+      analogWrite(blue1, 0);
+      analogWrite(green1, 0);
+      delay(200);
+      analogWrite(red1, 0);
+      analogWrite(blue1, 200);
+      analogWrite(green1, 0);
+      delay(200);
+      analogWrite(red1, 0);
+      analogWrite(blue1, 0);
+      analogWrite(green1, 200);
+      delay(200);
+    }
+    
+    roundClear();
+    scoreCount();
+  }  
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~BOT SCISSORS, MAN ROCK, MAN WIN~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if(botChoice == 3 && manChoice == 1){
+    manRounds+=1;
+    Serial.println("MAN WINS:");
+    Serial.println(manRounds);
+    
+    winSound();
+    
+    analogWrite(red2, 0);
+    analogWrite(blue2, 0);
+    analogWrite(green2, 0);
+    
+    for(int i = 0; i < 5; i++){
+      analogWrite(red1, 200);
+      analogWrite(blue1, 0);
+      analogWrite(green1, 0);
+      delay(200);
+      analogWrite(red1, 0);
+      analogWrite(blue1, 200);
+      analogWrite(green1, 0);
+      delay(200);
+      analogWrite(red1, 0);
+      analogWrite(blue1, 0);
+      analogWrite(green1, 200);
+      delay(200);
+    }
+    
+    roundClear();
+    scoreCount();
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~BOT SCISSORS, MAN PAPER, BOT WIN~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if(botChoice == 3 && manChoice == 2){
+    botRounds+=1;
+    Serial.println("BOT WINS:");
+    Serial.println(botRounds);
+    
+    loseSound();
+    
+    analogWrite(red1, 0);
+    analogWrite(blue1, 0);
+    analogWrite(green1, 0);
+    
+    for(int i = 0; i < 5; i++){
+      analogWrite(red2, 200);
+      analogWrite(blue2, 0);
+      analogWrite(green2, 0);
+      delay(200);
+      analogWrite(red2, 0);
+      analogWrite(blue2, 200);
+      analogWrite(green2, 0);
+      delay(200);
+      analogWrite(red2, 0);
+      analogWrite(blue2, 0);
+      analogWrite(green2, 200);
+      delay(200);
+    }
+    
+    roundClear();
+    scoreCount();
+  }
+}
+
+void winSound(){
+  tone(buzzer, 262, 500);
+  delay(1000);
+}
+
+void loseSound(){
+  tone(buzzer, 523, 500);
+  delay(1500);
+}
+
+void clear7(){
+  for(int i = 2; i < 9; i++){
+    digitalWrite(i, LOW);
+  }
+}
+
+void botFlash(){
+  for(int i = 0; i < 4; i++){
+    digitalWrite(bot, HIGH);
+    digitalWrite(bLeft, HIGH);
+    digitalWrite(bRight, HIGH);
+    delay(200);
+    digitalWrite(bot, LOW);
+    digitalWrite(bLeft, LOW);
+    digitalWrite(bRight, LOW);
+    delay(200);
+  }
+}
+
+void topFlash(){
+  for(int i = 0; i < 4; i++){
+    digitalWrite(top, HIGH);
+    digitalWrite(tLeft, HIGH);
+    digitalWrite(tRight, HIGH);
+    delay(200);
+    digitalWrite(top, LOW);
+    digitalWrite(tLeft, LOW);
+    digitalWrite(tRight, LOW);
+    delay(200);
+  }
+}
+
+void roundClear(){
+
+  analogWrite(red1, 0);
+  analogWrite(blue1, 0);
+  analogWrite(green1, 0);
+
+  analogWrite(red2, 0);
+  analogWrite(blue2, 0);
+  analogWrite(green2, 0);
+  
+  manChoice = 0;
+  botChoice = 0;
+  
+  pState1 = 0;
+  pState2 = 0;
+  pState3 = 0;
+}
+
+void botChooses(){
+  int delayVal;
+  for(delayVal = 200; delayVal > 0; delayVal-=10){
+    analogWrite(red2, 200);
+    analogWrite(blue2, 0);
+    analogWrite(green2, 0);
+    delay(delayVal);
+    analogWrite(red2, 0);
+    analogWrite(blue2, 200);
+    analogWrite(green2, 0);
+    delay(delayVal);
+    analogWrite(red2, 0);
+    analogWrite(blue2, 0);
+    analogWrite(green2, 200);
+    delay(delayVal);
+  }
+  botChoice = random(1,4);
+
+  Serial.println("BOT CHOSE:");
+  Serial.println(botChoice);
+
+  if(botChoice == 1){
+    analogWrite(red2, 200);
+    analogWrite(blue2, 0);
+    analogWrite(green2, 0);
+  }
+
+  if(botChoice == 2){
+    analogWrite(red2, 0);
+    analogWrite(blue2, 200);
+    analogWrite(green2, 0);
+  }
+
+  if(botChoice == 3){
+    analogWrite(red2, 0);
+    analogWrite(blue2, 0);
+    analogWrite(green2, 200);
+  }
+}
+
+void gameClear(){
+  botRounds = 0;
+  manRounds = 0;
+  clear7();
+}
+
+void scoreCount(){
+  if(botRounds == 3){
+    botFlash();
+    gameClear();
+  }
+  
+  if(manRounds == 3){
+    topFlash();
+    gameClear();
+  }
+
+  if(manRounds == 1){
+    digitalWrite(tLeft, HIGH);
+  }
+
+  if(manRounds == 2){
+    digitalWrite(top, HIGH);
+  }
+
+  if(botRounds == 1){
+    digitalWrite(bRight, HIGH);
+  }
+
+  if(botRounds == 2){
+    digitalWrite(bot, HIGH);
+  }
+}
